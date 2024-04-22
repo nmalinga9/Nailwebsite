@@ -6,10 +6,11 @@ header("Access-Control-Allow-Headers: Content-Type");
 
 // Check if the request method is OPTIONS and handle it
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    http_response_code(200); 
+    http_response_code(200); // Respond with HTTP OK status
+    exit;
 }
 
-
+// Database connection parameters
 $hostName = "localhost";
 $dbUser = "root";
 $dbPassword = "";
@@ -29,9 +30,16 @@ if (!$conn) {
     exit;
 }
 
-// Handle GET request to fetch available times
+// Handle form submission
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    // Retrieve form data
+    $formData = json_decode(file_get_contents('php://input'), true);
+    // ... (existing code for form submission)
+}
+
+
 if ($_SERVER["REQUEST_METHOD"] == "GET") {
-    // Check if the required parameter (selectedDate) is provided
+  
     if (!isset($_GET['selectedDate'])) {
         $response = array(
             "success" => false,
@@ -42,7 +50,7 @@ if ($_SERVER["REQUEST_METHOD"] == "GET") {
         exit;
     }
 
-    //  the selectedDate parameter
+
     $selectedDate = mysqli_real_escape_string($conn, $_GET['selectedDate']);
 
     // Fetch available times for the selected date from the database
@@ -59,13 +67,13 @@ if ($_SERVER["REQUEST_METHOD"] == "GET") {
         exit;
     }
 
-    // Process the query result 
+
     $availableTimes = array();
     while ($row = mysqli_fetch_assoc($result)) {
         $availableTimes[] = $row['time_slot'];
     }
 
-    // Return as JSON response
+    // Return the available times as JSON response
     $response = array(
         "success" => true,
         "availableTimes" => $availableTimes
@@ -74,10 +82,9 @@ if ($_SERVER["REQUEST_METHOD"] == "GET") {
     echo json_encode($response);
 }
 
-
+// Close database connection
 mysqli_close($conn);
 ?>
-
 
 
 

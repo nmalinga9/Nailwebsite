@@ -1,31 +1,20 @@
 <?php
-// Display PHP errors and warnings
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
+header("Access-Control-Allow-Origin: http://localhost:5173");
+header("Access-Control-Allow-Methods: POST, GET, OPTIONS");
+header("Access-Control-Allow-Headers: Content-Type");
 
-// Disable output buffering
-while (ob_get_level()) {
-    ob_end_clean();
+// Check if the request method is OPTIONS and handle it
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    exit; // No need to send any response for OPTIONS requests
 }
 
-// Disable PHP output compression
-ini_set('zlib.output_compression', 'Off');
-
-// Allow cross-origin requests
-header("Access-Control-Allow-Origin: http://localhost:5173");
-header("Access-Control-Allow-Methods: POST, GET");
-header("Access-Control-Allow-Headers: Content-Type");
-header('Content-Type: application/json');
-
-// Include PHPMailer autoloader
-// Adjust the require statements to point to the PHPMailer files in the specified directory
-require 'C:\xampp\htdocs\PHPMailer-master\src\PHPMailer.php';
-require 'C:\xampp\htdocs\PHPMailer-master\src\SMTP.php';
-require 'C:\xampp\htdocs\PHPMailer-master\src\Exception.php';
-
 use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\SMTP;
 use PHPMailer\PHPMailer\Exception;
+
+// Include PHPMailer files
+require 'phpmailer/src/Exception.php';
+require 'phpmailer/src/PHPMailer.php';
+require 'phpmailer/src/SMTP.php';
 
 // Database connection parameters
 $hostName = "localhost";
@@ -38,71 +27,241 @@ $conn = mysqli_connect($hostName, $dbUser, $dbPassword, $dbName);
 
 // Check connection
 if (!$conn) {
-    $response = array("success" => false, "message" => "Connection failed: " . mysqli_connect_error());
+    $response = array(
+        "success" => false,
+        "error" => "Connection failed: " . mysqli_connect_error()
+    );
+    header('Content-Type: application/json');
     echo json_encode($response);
     exit;
 }
 
-// Handle form submission or appointment fetch
+//  form submission script
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    // Handle form submission
-    // Get the JSON data sent from the client
-    $json_data = file_get_contents("php://input");
-    $formDataWithDateTime = json_decode($json_data, true);
+    // data to be recevied in the form 
+    $formData = json_decode(file_get_contents('php://input'), true);
+    $firstName = $formData['firstName'];
+    $lastName = $formData['lastName'];
+    $email = $formData['email'];
+    $phone = $formData['phone'];
+    $selectedDate = $formData['selectedDate'];
+    $selectedTime = $formData['selectedTime'];
+    $selectedService = $formData['selectedService'];
 
-    // Retrieve form data
-    $firstName = $formDataWithDateTime['firstName'];
-    $lastName = $formDataWithDateTime['lastName'];
-    $email = $formDataWithDateTime['email'];
-    $phone = $formDataWithDateTime['phone'];
-    $selectedDate = date('Y-m-d', strtotime($formDataWithDateTime['selectedDate']));
-    $selectedTime = $formDataWithDateTime['selectedTime'];
-    $selectedService = $formDataWithDateTime['selectedService'];
-
-    // Insert form data into the database with SelectedService field
-    $sql = "INSERT INTO users (Firstname, Lastname, Email, PhoneNumber, SelectedDate, SelectedTime, SelectedService) VALUES ('$firstName', '$lastName', '$email', '$phone', '$selectedDate', '$selectedTime', '$selectedService')";
-
+    // Date and time format to match database
+    $dateTime = new DateTime($selectedDate);
+    $formattedDate = $dateTime->format('Y-m-d');
+    
+    $formattedTime = date('H:i:s', strtotime($selectedTime));
+    // Insert form data into the users table
+    $sql = "INSERT INTO users (Firstname, Lastname, PhoneNumber, Email, SelectedDate, SelectedTime, SelectedService) VALUES ('$firstName', '$lastName', '$phone', '$email', '$formattedDate', '$formattedTime', '$selectedService')";
     if (mysqli_query($conn, $sql)) {
-        // Data inserted successfully
-        // Send confirmation email
-        $mail = new PHPMailer(true);
-        try {
-            //Server settings
-            $mail->isSMTP();
-            $mail->Host = 'smtp.aol.com'; // AOL SMTP server
-            $mail->SMTPDebug = SMTP::DEBUG_SERVER;
-            $mail->SMTPAuth = true;
-            $mail->Username = 'nol900023@aol.com'; // Your AOL email address
-            $mail->Password = 'tianakimare23'; // Your AOL account password
-            $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-            $mail->Port = "587";
+       
+        // Update the corresponding record in the available_times table to mark it as unavailable
+        $updateSql = "UPDATE available_times SET available = 0 WHERE date = '$formattedDate' AND time_slot = '$formattedTime' AND available = 1";
+        if (mysqli_query($conn, $updateSql)) {
 
-            //Recipients
-            $mail->setFrom('nol900023@aol.com', 'Shanice');
-            $mail->addAddress($email, $firstName); // Add a recipient
+           //email confirmations to admin and user
+            $mail = new PHPMailer(true);
+            try {
+                $mail->isSMTP();
+                $mail->Host = 'smtp.gmail.com';
+                $mail->SMTPAuth = true;
+                $mail->Username = 'nolwazivmalinga@gmail.com'; // Gmail email address
+                $mail->Password = 'zkbg yvll owky gzdy'; //  Gmail password
+                $mail->SMTPSecure = 'ssl';
+                $mail->Port = 465;
+                $mail->setFrom('nolwazivmalinga@gmail.com', 'Nolwazi'); // Gmail email address and name
+                $mail->addAddress($email, $firstName . ' ' . $lastName);
+                $mail->isHTML(true);
+                $mail->Subject = 'Appointment Confirmation';
+                
+                $mail->Body = '
+                    <html>
+                    <head>
+                        <style>
+                            body {
+                                font-family: Arial, sans-serif;
+                                background-color: #f8f8f8;
+                                color: #333;
+                            }
+                            .container {
+                                max-width: 600px;
+                                margin: 0 auto;
+                                padding: 20px;
+                                background-color: #fff;
+                                border-radius: 5px;
+                                box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+                            }
+                            h1 {
+                                color: #d04167;
+                            }
+                            p {
+                                margin-bottom: 10px;
+                            }
+                        </style>
+                    </head>
+                    <body>
+                        <div class="container">
+                            <h1>Appointment Confirmation</h1>
+                            <p>Dear ' . $firstName . ',</p>
+                            <p>Your appointment has been successfully booked.</p>
+                            <p><strong>Date:</strong> ' . $formattedDate . '</p>
+                            <p><strong>Time:</strong> ' . $formattedTime . '</p>
+                            <p><strong>Service:</strong> ' . $selectedService . '</p>
+                            <p>We look forward to seeing you!</p>
+                            <p>Best regards,<br> NNAILS</p>
+                        </div>
+                    </body>
+                    </html>';
+                $mail->send();
 
-            //Content
-            $mail->isHTML(true); // Set email format to HTML
-            $mail->Subject = 'Booking Confirmation';
-            $mail->Body = "Hello $firstName,<br><br>Your appointment for $selectedService on $selectedDate at $selectedTime has been successfully booked.<br><br>Thank you for choosing us!";
-            $mail->send();
+                // Send notification email to admin
+                $adminEmail = 'nolwazivmalinga@gmail.com'; // Change this to the admin's email address
+                $mailAdmin = new PHPMailer(true);
+                try {
+                    $mailAdmin->isSMTP();
+                    $mailAdmin->Host = 'smtp.gmail.com';
+                    $mailAdmin->SMTPAuth = true;
+                    $mailAdmin->Username = 'nolwazivmalinga@gmail.com'; // Your Gmail email address
+                    $mailAdmin->Password = 'zkbg yvll owky gzdy'; // Your Gmail password
+                    $mailAdmin->SMTPSecure = 'ssl';
+                    $mailAdmin->Port = 465;
+                    $mailAdmin->setFrom('nolwazivmalinga@gmail.com', 'Nolwazi'); // Your Gmail email address and your name
+                    $mailAdmin->addAddress($adminEmail);
+                    $mailAdmin->isHTML(true);
+                    $mailAdmin->Subject = 'New Appointment Booking';
+                    // Email body with user's appointment details for admin notification
+                    $mailAdmin->Body = '
+                        <html>
+                        <head>
+                            <style>
+                                body {
+                                    font-family: Arial, sans-serif;
+                                    background-color: #f8f8f8;
+                                    color: #333;
+                                }
+                                .container {
+                                    max-width: 600px;
+                                    margin: 0 auto;
+                                    padding: 20px;
+                                    background-color: #fff;
+                                    border-radius: 5px;
+                                    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+                                }
+                                h1 {
+                                    color: #d04167;
+                                }
+                                p {
+                                    margin-bottom: 10px;
+                                }
+                            </style>
+                        </head>
+                        <body>
+                            <div class="container">
+                                <h1>New Appointment Booking</h1>
+                                <p>A user has booked a new appointment:</p>
+                                <p><strong>User Name:</strong> ' . $firstName . ' ' . $lastName . '</p>
+                                <p><strong>User Email:</strong> ' . $email . '</p>
+                                <p><strong>Date:</strong> ' . $formattedDate . '</p>
+                                <p><strong>Time:</strong> ' . $formattedTime . '</p>
+                                <p><strong>Service:</strong> ' . $selectedService . '</p>
+                            </div>
+                        </body>
+                        </html>';
+                    $mailAdmin->send();
+                } catch (Exception $e) {
+                    // Error sending admin notification email
+                    $response = array("success" => false, "error" => $mailAdmin->ErrorInfo);
+                    header('Content-Type: application/json');
+                    echo json_encode($response);
+                    exit;
+                }
 
-            $response = array("success" => true, "message" => "Booking successful. Confirmation email sent.");
+                // Success response
+                $response = array("success" => true);
+                header('Content-Type: application/json');
+                echo json_encode($response);
+            } catch (Exception $e) {
+                // Error sending user confirmation email
+                $response = array("success" => false, "error" => $mail->ErrorInfo);
+                header('Content-Type: application/json');
+                echo json_encode($response);
+                exit;
+            }
+        } else {
+            // Failed to update available times
+            $response = array("success" => false, "error" => "Failed to update available times");
+            header('Content-Type: application/json');
             echo json_encode($response);
-        } catch (Exception $e) {
-            $response = array("success" => false, "message" => "Error sending confirmation email: " . $mail->ErrorInfo);
-            echo json_encode($response);
+            exit;
         }
     } else {
-        // Error occurred during booking
-        $response = array("success" => false, "message" => "Error booking: " . mysqli_error($conn));
+        // Error occurred while inserting data
+        $response = array("success" => false, "error" => mysqli_error($conn));
+        header('Content-Type: application/json');
         echo json_encode($response);
+        exit;
     }
+} else {
+    // Return an error response 
+    $response = array(
+        'success' => false,
+        'message' => 'Invalid request method'
+    );
+    header('Content-Type: application/json');
+    echo json_encode($response);
+    exit;
 }
 
 // Close database connection
 mysqli_close($conn);
-?>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

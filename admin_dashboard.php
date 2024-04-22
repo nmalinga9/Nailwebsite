@@ -10,7 +10,7 @@ $dbUser = "root";
 $dbPassword = "";
 $dbName = "booking";
 
-// Create connection
+// Create db connection
 $conn = new mysqli($hostName, $dbUser, $dbPassword, $dbName);
 
 // Check connection
@@ -26,9 +26,9 @@ $result = $conn->query($sql);
 $bookings = array();
 
 if ($result->num_rows > 0) {
-    // Fetch each row of the result as an associative array
+    // Fetch 
     while ($row = $result->fetch_assoc()) {
-        // Append each booking to the $bookings array
+    
         $bookings[] = $row;
     }
 }

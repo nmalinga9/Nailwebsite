@@ -5,13 +5,13 @@ header("Access-Control-Allow-Methods: POST, GET, OPTIONS, DELETE");
 header("Access-Control-Allow-Headers: Content-Type");
 header("Access-Control-Allow-Credentials: true");
 
-
+// If this is a preflight request, return early with a 200 status
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
     exit;
 }
 
-// start session
+//  session
 session_start();
 
 // Log the request data
@@ -33,18 +33,18 @@ if (!$conn) {
     exit;
 }
 
-//  fetch appointments for a given email
+// Function to fetch appointments for a given email
 function fetchAppointmentsByEmail($conn, $email) {
     $email = mysqli_real_escape_string($conn, $email);
 
-    //  fetch appointments associated with the user's email
+    // Query to fetch appointments associated with the user's email
     $sql = "SELECT ID, SelectedDate AS date, SelectedTime AS time, SelectedService AS service FROM users WHERE Email = '$email'";
     $result = mysqli_query($conn, $sql);
 
     // Check if there are appointments for the user
     $appointments = [];
     if (mysqli_num_rows($result) > 0) {
-        // Fetch appointment data and store it in array
+        // Fetch appointment data and store it in an array
         while ($row = mysqli_fetch_assoc($result)) {
             $appointments[] = array(
                 "id" => $row['ID'],
@@ -57,7 +57,7 @@ function fetchAppointmentsByEmail($conn, $email) {
     return $appointments;
 }
 
-//  POST request for logging in
+// Handle POST request for logging in
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = isset($data['email']) ? mysqli_real_escape_string($conn, $data['email']) : '';
     $password = isset($data['password']) ? mysqli_real_escape_string($conn, $data['password']) : '';
@@ -71,12 +71,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Check if the user exists and password matches
     $userQuery = mysqli_query($conn, "SELECT ID FROM users WHERE Email = '$email' AND Password = '$password'");
     if (mysqli_num_rows($userQuery) > 0) {
-        // User exists and login works 
+        // User exists and login successful
         // Fetch appointments for the logged-in user
         $appointments = fetchAppointmentsByEmail($conn, $email);
-        echo json_encode(array("success" => "Login successful", "appointments" => $appointments)); 
+        echo json_encode(array("success" => "Login successful", "appointments" => $appointments)); // Include appointments data in response
     } else {
-        // User does not exist or invalid logging in
+        // User does not exist or invalid credentials
         http_response_code(401);
         echo json_encode(array("error" => "Invalid email or password"));
     }
