@@ -1,0 +1,213 @@
+/* ConfirmationBackground.css */
+
+.confirmation-background {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ffd3e5;
+  background-size: cover;
+  background-position: center;
+}
+
+.confirmation-container {
+  margin-top: 100px;
+  text-align: center;
+  color: #333; 
+}
+
+.confirmation-message {
+  margin-bottom: 30px;
+}
+
+.thank-you {
+  font-size: 24px;
+  font-weight: bold;
+  color: purple;
+}
+
+.confirmation-note {
+  font-size: 18px;
+  margin-top: 10px;
+}
+
+.booking-details {
+  background-color: #fff; 
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Box shadow  */
+}
+
+.booking-details h3 {
+  font-size: 20px;
+  margin-bottom: 10px;
+}
+
+.booking-details p {
+  font-size: 16px;
+  margin-bottom: 5px;
+}
+
+.label {
+  font-weight: bold;
+}
+
+
+.nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 40px 120px;
+  color: white;
+}
+
+.nav-logo {
+  font-family: Outfit;
+  font-size: 50px;
+  font-weight: 1000;
+  color: white;
+}
+
+.nav-menu {
+  display: flex;
+  align-items: center;
+  list-style: none;
+  font-size: 25px;
+  gap: 90px;
+}
+
+.nav-book {
+  border-radius: 50px;
+  padding: 10px 38px;
+  background: #fff;
+  color: #262626;
+}
+
+.nav-menu li a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.nav-menu li:hover::before {
+  content: '';
+  position: absolute;
+  bottom: -5px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background-color: transparent;
+}
+
+
+.confirmation-container {
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  margin-top: 20px;
+  padding: 20px;
+}
+
+
+
+
+.confirmation-container {
+  margin-top: 100px;
+  text-align: center;
+  color: #333; 
+}
+
+.confirmation-message {
+  margin-bottom: 30px;
+  background-color: #f9f9f9; 
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Box shadow  */
+}
+
+.thank-you {
+  font-size: 24px;
+  font-weight: bold;
+  color: purple; 
+}
+
+.confirmation-note {
+  font-size: 18px;
+  margin-top: 10px;
+}
+
+.booking-details {
+  background-color: #fff; 
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); 
+}
+
+.booking-details h3 {
+  font-size: 20px;
+  margin-bottom: 10px;
+}
+
+.booking-details p {
+  font-size: 16px;
+  margin-bottom: 5px;
+}
+
+.label {
+  font-weight: bold;
+}
+
+
+
+.booking-buttons {
+  margin-top: 20px;
+}
+
+
+/* Button Styles */
+.booking-buttons button,
+.booking-buttons .register-btn {
+  background-color: #d71164; 
+  color: white; 
+  padding: 12px 20px; 
+  border: none; 
+  border-radius: 4px; 
+  cursor: pointer; 
+  transition: background-color 0.3s ease; 
+  text-decoration: none; 
+}
+
+/* Button Hover Effect */
+.booking-buttons button:hover,
+.booking-buttons .register-btn:hover {
+  background-color: #45a049; 
+}
+
+/* Button Shadow */
+.booking-buttons button,
+.booking-buttons .register-btn {
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2); 
+}
+
+
+
+.booking-buttons {
+  display: flex; 
+  justify-content: center; 
+  gap: 16px; 
+}
+
+/* Font Styles */
+.booking-buttons button,
+.booking-buttons .register-btn {
+  font-family: 'Montserrat', sans-serif; 
+  font-weight: 600;
+  letter-spacing: 0.5px; 
+}
+
+.confirmation-background {
+  padding: 20px;
+  overflow-y: auto; 
+}
+
+
